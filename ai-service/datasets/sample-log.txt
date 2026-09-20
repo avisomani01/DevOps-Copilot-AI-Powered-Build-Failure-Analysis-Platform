@@ -1,0 +1,4 @@
+[INFO] Building demo-service 1.0.0
+[ERROR] Failed to execute goal on project demo-service: Could not resolve dependencies for project com.demo:demo-service:jar:1.0.0
+[ERROR] Could not find artifact com.example:internal-library:jar:2.1.0
+[ERROR] Re-run Maven with the -e switch for the full stack trace.

@@ -1,0 +1,3 @@
+{"expected_category":"PYTHON_MODULE","log_content":"Traceback (most recent call last):\nModuleNotFoundError: No module named 'internal_tools'"}
+{"expected_category":"JAVA_COMPILATION","log_content":"error: cannot find symbol\n  symbol: class PaymentClient"}
+{"expected_category":"CONFIGURATION","log_content":"ERROR required environment variable REDIS_URL is not set"}

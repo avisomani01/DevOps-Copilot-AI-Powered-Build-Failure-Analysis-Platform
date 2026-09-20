@@ -1,0 +1,18 @@
+{"expected_category":"MAVEN_DEPENDENCY","log_content":"[ERROR] Failed to execute goal: Could not resolve dependencies for project com.demo:app\nCould not find artifact com.example:missing:jar:1.0.0"}
+{"expected_category":"MAVEN_DEPENDENCY","log_content":"[ERROR] Non-resolvable parent POM for com.demo:service:1.0.0"}
+{"expected_category":"GRADLE_DEPENDENCY","log_content":"Execution failed for task ':app:dependencies'.\nCould not resolve all files for configuration ':compileClasspath'."}
+{"expected_category":"GRADLE_DEPENDENCY","log_content":"Could not find org.example:library:2.0.\nSearched in the following locations."}
+{"expected_category":"JAVA_COMPILATION","log_content":"[ERROR] /src/App.java:[12,8] cannot find symbol\n  symbol: class UserService"}
+{"expected_category":"JAVA_COMPILATION","log_content":"error: incompatible types: String cannot be converted to int"}
+{"expected_category":"PYTHON_MODULE","log_content":"Traceback (most recent call last):\nModuleNotFoundError: No module named 'requests'"}
+{"expected_category":"PYTHON_MODULE","log_content":"ImportError: cannot import name 'FastAPI' from 'fastapi'"}
+{"expected_category":"DOCKER_BUILD","log_content":"ERROR: failed to solve: failed to compute cache key\nDockerfile:7"}
+{"expected_category":"DOCKER_BUILD","log_content":"Step 4/6 : COPY requirements.txt /app/\nCOPY failed: file not found in build context"}
+{"expected_category":"JENKINS_PIPELINE","log_content":"[Pipeline] sh\nscript returned exit code 1\nFinished: FAILURE"}
+{"expected_category":"JENKINS_PIPELINE","log_content":"hudson.AbortException: script returned exit code 2"}
+{"expected_category":"TEST_FAILURE","log_content":"Tests run: 15, Failures: 2, Errors: 0, Skipped: 0"}
+{"expected_category":"TEST_FAILURE","log_content":"AssertionError: expected status 200 but was 500"}
+{"expected_category":"CONFIGURATION","log_content":"Build failed because environment variable DATABASE_URL not set"}
+{"expected_category":"CONFIGURATION","log_content":"Invalid configuration: API key is missing"}
+{"expected_category":"UNKNOWN","log_content":"Build stopped after an unexpected condition in a custom plugin."}
+{"expected_category":"UNKNOWN","log_content":"fatal custom-tool state could not be interpreted"}
