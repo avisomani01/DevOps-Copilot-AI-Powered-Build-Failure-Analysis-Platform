@@ -18,6 +18,8 @@ class AnalyzeLogResponse(BaseModel):
     fingerprint: str
     analyzer_type: Literal["OLLAMA", "RULE_BASED", "ML", "STATIC"]
     llm_enrichment_applied: bool = False
+    llm_grounded: bool = True
+    llm_unverified_claims: list[str] = Field(default_factory=list)
 
 
 class HealthResponse(BaseModel):

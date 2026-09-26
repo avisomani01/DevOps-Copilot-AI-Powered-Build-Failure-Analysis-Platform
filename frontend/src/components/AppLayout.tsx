@@ -1,6 +1,6 @@
 import { NavLink, Outlet } from "react-router-dom";
 
-const links = [["/dashboard", "Dashboard"], ["/upload", "Upload log"], ["/history", "Build history"]];
+const links = [["/dashboard", "Dashboard"], ["/upload", "Upload log"], ["/history", "Build history"], ["/llm-debug", "LLM Debugging"]];
 
 export function AppLayout() {
   return <div className="min-h-screen md:flex">

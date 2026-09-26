@@ -5,6 +5,8 @@ import builtins
 import hashlib
 import re
 
+from app.services import multi_lang_analyzer
+
 
 SOURCE_TYPES = {"PYTHON", "JAVA", "JAVASCRIPT", "TYPESCRIPT", "GO", "RUST", "C", "CPP", "CSHARP", "PHP", "RUBY", "SWIFT", "KOTLIN"}
 
@@ -178,6 +180,13 @@ def analyze_source_code(content: str, source_type: str) -> dict | None:
         if finder.issues:
             issues = list(dict.fromkeys(finder.issues))[:12]
             return _result("PYTHON_STATIC_ERROR", 92, "Potential Python runtime error found.", "The static scan found code that will fail or produce an incorrect result when that path runs.", issues, ["Define the missing name, import it, or correct the spelling.", "Return values produced by recursive calculations instead of discarding them.", "Correct the reported literal operation, index, key, or conversion before running the program."])
+    if multi_lang_analyzer.supported(source):
+        issues = multi_lang_analyzer.analyze(content, source)
+        if issues is not None:
+            if not issues:
+                return _result("CODE_REVIEW", 85, f"{source.replace('_', ' ').title()} source parsed with no syntax errors.", "No syntax issue was found by the grammar-based parser. Runtime, type, dependency, and framework errors still require build output or a language-specific compiler.", [], ["Run the language compiler, linter, or test suite for deeper checks.", "Upload any resulting error output for root-cause analysis."])
+            formatted = [issue.message[0].upper() + issue.message[1:] for issue in issues]
+            return _result("CODE_SYNTAX", 95, f"{source.replace('_', ' ').title()} syntax error found.", formatted[0], formatted, ["Fix the syntax at the reported line(s).", "Check brackets, quotes, semicolons, and matching keywords near that line."])
     delimiter_error = _delimiter_error(content)
     if delimiter_error:
         return _result("CODE_SYNTAX", 90, "A structural syntax issue was found.", delimiter_error, [delimiter_error], ["Match every opening bracket, parenthesis, and brace.", "Close the unterminated string or remove the unexpected delimiter."])

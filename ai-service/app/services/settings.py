@@ -12,6 +12,7 @@ class Settings:
     ml_enabled: bool
     ml_model_path: str
     ml_minimum_confidence: float
+    llm_project_state_dir: str
 
     @classmethod
     def from_environment(cls) -> "Settings":
@@ -24,4 +25,5 @@ class Settings:
             ml_enabled=os.getenv("ML_ENABLED", "false").lower() == "true",
             ml_model_path=os.getenv("ML_MODEL_PATH", "models/log_classifier.joblib"),
             ml_minimum_confidence=float(os.getenv("ML_MINIMUM_CONFIDENCE", "60")),
+            llm_project_state_dir=os.getenv("LLM_PROJECT_STATE_DIR", "data/llm_project_state"),
         )

@@ -4,6 +4,7 @@ import re
 
 import httpx
 
+from app.services.llm_fact_checker import check_grounding
 from app.services.settings import Settings
 
 logger = logging.getLogger(__name__)
@@ -23,7 +24,7 @@ class OllamaClient:
             async with httpx.AsyncClient(timeout=self._settings.ollama_timeout_seconds) as client:
                 response = await client.post(f"{self._settings.ollama_base_url}/api/generate", json=payload)
                 response.raise_for_status()
-            return self._validate_response(json.loads(response.json()["response"]), rule_result)
+            return self._validate_response(json.loads(response.json()["response"]), rule_result, source_content, rule_result.get("extracted_errors", []))
         except (httpx.HTTPError, KeyError, TypeError, ValueError, json.JSONDecodeError) as exception:
             logger.warning("Ollama enrichment unavailable; using rule-based result: %s", exception)
             return None
@@ -63,12 +64,22 @@ Line-numbered source context:
 """
 
     @staticmethod
-    def _validate_response(candidate: dict, fallback: dict) -> dict:
+    def _validate_response(candidate: dict, fallback: dict, source_content: str, extracted_errors: list[str]) -> dict:
         fixes = candidate.get("suggested_fixes")
         if not isinstance(fixes, list) or not all(isinstance(item, str) and item.strip() for item in fixes):
             fixes = fallback["suggested_fixes"]
-        return {
+        validated = {
             "summary": str(candidate.get("summary") or fallback["summary"])[:300],
             "root_cause": str(candidate.get("root_cause") or fallback["root_cause"])[:300],
             "suggested_fixes": fixes[:4],
         }
+        log_content = "\n".join(extracted_errors)
+        grounding = check_grounding(validated, source_content, log_content)
+        if not grounding["grounded"]:
+            logger.warning("LLM enrichment contained unverified claims: %s", grounding["warnings"])
+            validated["llm_grounded"] = False
+            validated["llm_unverified_claims"] = grounding["warnings"]
+        else:
+            validated["llm_grounded"] = True
+            validated["llm_unverified_claims"] = []
+        return validated

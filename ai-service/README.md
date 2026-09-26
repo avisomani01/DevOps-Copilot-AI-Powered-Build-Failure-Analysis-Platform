@@ -59,6 +59,38 @@ conversions, `len()` type errors, and `None` attribute access without executing
 the uploaded code. It does not run uploaded files, so it cannot detect input-,
 database-, network-, or installed-package-specific runtime failures.
 
+## LLM Debugging Assistant (project memory + evidence-based diagnostics)
+
+Beyond diagnosing build logs, the service can diagnose problems in *your own* LLM
+integration code (Ollama, OpenAI, or any other client), and remembers what it found
+across repeated analyses of the same project.
+
+- **`app/services/llm_response_analyzer.py`** - evidence-based detectors (same
+  transparent, regex/structural-evidence philosophy as `rule_engine.py`, not an opaque
+  confidence number) for: timeouts, JSON parsing failures, lost conversation context,
+  hallucination risk, blocking calls inside `async def`, and prompt/output format
+  mismatches. Every finding lists the exact evidence found and an honest
+  `evidence_level` (`CONFIRMED` / `LIKELY` / `POSSIBLE` / `INSUFFICIENT_EVIDENCE`) -
+  it never fabricates a percentage.
+- **`app/services/project_context_manager.py`** - persistent, file-based project
+  memory (`data/llm_project_state/{project_id}.json`, gitignored). Tracks every issue
+  found, and on each new analysis compares against the last one: still-working,
+  apparently-fixed-but-not-yet-verified, unresolved, newly-broken, and regressed
+  (a previously `VERIFIED` issue reappearing). Fixes are never auto-marked `VERIFIED`
+  - only `POST /api/v1/project/{id}/feedback` does that, on purpose (see section 10 of
+  the design spec this was built against: don't claim a fix worked without evidence).
+- **`app/services/llm_diagnostic_engine.py`** - orchestrates the two above into the
+  full diagnose -> compare -> recommend workflow.
+
+New endpoints: `POST /api/v1/analyze-llm` (diagnosis + automatic comparison to the
+project's last analysis), `POST /api/v1/continue-debugging` (what to investigate next,
+based on stored unresolved issues), `GET /api/v1/project/{id}/history`,
+`GET /api/v1/project/{id}/state`, `POST /api/v1/project/{id}/feedback` (mark a finding
+`VERIFIED`/`FAILED`/etc.). Frontend: **LLM Debugging** page in the sidebar.
+
+Tests: `tests/test_llm_diagnostics.py` (16 tests covering each detector, persistence,
+comparison states including regression/failed-fix detection, and continue-debugging).
+
 ## ML classifier: dataset, diagnostics, and calibration
 
 The rule engine is the default and handles most known failures. The optional ML

@@ -2,10 +2,10 @@ import axios from "axios";
 
 export type UploadedLog = { id: string; originalFilename: string; sourceType: string; uploadStatus: string; uploadedAt: string };
 export type LogPage = { content: UploadedLog[]; page: number; size: number; totalElements: number; totalPages: number };
-export type AnalysisResult = { id: string; buildLogId: string; status: string; errorCategory: string | null; confidenceScore: number | null; summary: string | null; rootCause: string | null; extractedErrors: string[]; suggestedFixes: string[]; analyzerType: string | null; failureReason: string | null; incidentOccurrenceCount: number; analyzedAt: string | null };
+export type AnalysisResult = { id: string; buildLogId: string; status: string; errorCategory: string | null; confidenceScore: number | null; summary: string | null; rootCause: string | null; extractedErrors: string[]; suggestedFixes: string[]; analyzerType: string | null; failureReason: string | null; incidentOccurrenceCount: number; analyzedAt: string | null; llmGrounded: boolean; llmUnverifiedClaims: string[] };
 export type IncidentResult = { analysisId: string; buildLogId: string; filename: string; category: string; summary: string; rootCause: string; occurrenceCount: number; analyzedAt: string };
 
-type AiResponse = { error_category: string; confidence_score: number; summary: string; root_cause: string; extracted_errors: string[]; suggested_fixes: string[]; analyzer_type: string };
+type AiResponse = { error_category: string; confidence_score: number; summary: string; root_cause: string; extracted_errors: string[]; suggested_fixes: string[]; analyzer_type: string; llm_grounded?: boolean; llm_unverified_claims?: string[] };
 type StoredItem = { log: UploadedLog; analysis: AnalysisResult };
 
 const storageKey = "devopsCopilotLocalAnalyses";
@@ -45,7 +45,7 @@ export async function uploadLog(file: File): Promise<UploadedLog> {
   const ai = (await axios.post<AiResponse>(`${aiBaseUrl}/analyze`, { log_content: content, source_type: sourceType })).data;
   const now = new Date().toISOString(); const logId = crypto.randomUUID(); const analysisId = crypto.randomUUID();
   const log: UploadedLog = { id: logId, originalFilename: file.name, sourceType, uploadStatus: "ANALYZED", uploadedAt: now };
-  const analysis: AnalysisResult = { id: analysisId, buildLogId: logId, status: "COMPLETED", errorCategory: ai.error_category, confidenceScore: ai.confidence_score, summary: ai.summary, rootCause: ai.root_cause, extractedErrors: ai.extracted_errors, suggestedFixes: ai.suggested_fixes, analyzerType: ai.analyzer_type, failureReason: null, incidentOccurrenceCount: 1, analyzedAt: now };
+  const analysis: AnalysisResult = { id: analysisId, buildLogId: logId, status: "COMPLETED", errorCategory: ai.error_category, confidenceScore: ai.confidence_score, summary: ai.summary, rootCause: ai.root_cause, extractedErrors: ai.extracted_errors, suggestedFixes: ai.suggested_fixes, analyzerType: ai.analyzer_type, failureReason: null, incidentOccurrenceCount: 1, analyzedAt: now, llmGrounded: ai.llm_grounded ?? true, llmUnverifiedClaims: ai.llm_unverified_claims ?? [] };
   writeItems([{ log, analysis }, ...readItems()]);
   return log;
 }
